@@ -229,15 +229,17 @@ func runCommandForService(cmds []types.Command, event *gomatrix.Event, arguments
 
 	cmdArgs := arguments[len(bestMatch.Path):]
 	log.WithFields(log.Fields{
-		"room_id": event.RoomID,
-		"user_id": event.Sender,
-		"command": bestMatch.Path,
+		"room_id": 	event.RoomID,
+		"event_id":	event.ID,
+		"user_id": 	event.Sender,
+		"command": 	bestMatch.Path,
 	}).Info("Executing command")
 	content, err := bestMatch.Command(event.RoomID, event.Sender, cmdArgs)
 	if err != nil {
 		if content != nil {
 			log.WithFields(log.Fields{
 				log.ErrorKey: err,
+				"event_id":   event.ID,
 				"room_id":    event.RoomID,
 				"user_id":    event.Sender,
 				"command":    bestMatch.Path,
@@ -347,6 +349,11 @@ func (c *Clients) newClient(config api.ClientConfig) (*gomatrix.Client, error) {
 	// a request against the server.
 
 	syncer.OnEventType("m.room.message", func(event *gomatrix.Event) {
+		log.WithFields(log.Fields{
+			"room_id": 	event.RoomID,
+			"event_id": event.ID,
+			"syncer":	syncer,
+		}).Info("Got message")
 		c.onMessageEvent(client, event)
 	})
 
